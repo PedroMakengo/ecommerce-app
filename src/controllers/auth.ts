@@ -1,52 +1,37 @@
-import { NextFunction, Request, Response } from 'express'
+import { Request, Response } from 'express'
 import { prismaClient } from '../index'
 import { hashSync, compareSync } from 'bcrypt'
 import * as jwt from 'jsonwebtoken'
 import { JWT_SECRET } from '../secrets'
 import { BadRequestsException } from '../exceptions/bad-requests'
 import { ErrorCode } from '../exceptions/root'
-import { UnprocessableEntity } from '../exceptions/validation'
 import { SignupSchema } from '../schema/users'
+import { NotFoundException } from '../exceptions/not-found'
 
 // Criando um usuário
-export const signup = async (
-  request: Request,
-  response: Response,
-  next: NextFunction
-) => {
-  try {
-    SignupSchema.parse(request.body)
-    const { email, password, name } = request.body
+export const signup = async (request: Request, response: Response) => {
+  // Validação do meu schema usando o zod
+  SignupSchema.parse(request.body)
+  const { email, password, name } = request.body
 
-    let user = await prismaClient.user.findFirst({ where: { email } })
+  let user = await prismaClient.user.findFirst({ where: { email } })
 
-    if (user) {
-      next(
-        new BadRequestsException(
-          'User already exists!',
-          ErrorCode.USER_ALREADY_EXISTS
-        )
-      )
-    }
-
-    user = await prismaClient.user.create({
-      data: {
-        name,
-        email,
-        password: hashSync(password, 10),
-      },
-    })
-
-    response.json(user)
-  } catch (error: any) {
-    next(
-      new UnprocessableEntity(
-        error?.issues,
-        'Unprocessable entity',
-        ErrorCode.UNPROCESSABLE_ENTITY
-      )
+  if (user) {
+    new BadRequestsException(
+      'User already exists!',
+      ErrorCode.USER_ALREADY_EXISTS
     )
   }
+
+  user = await prismaClient.user.create({
+    data: {
+      name,
+      email,
+      password: hashSync(password, 10),
+    },
+  })
+
+  response.json(user)
 }
 
 // Login
@@ -56,11 +41,17 @@ export const login = async (request: Request, response: Response) => {
   let user = await prismaClient.user.findFirst({ where: { email } })
 
   if (!user) {
-    throw Error('User does not exits!')
+    throw new NotFoundException(
+      'User does not exits!',
+      ErrorCode.USER_NOT_FOUND
+    )
   }
 
   if (!compareSync(password, user.password)) {
-    throw Error('Incorrect password!')
+    throw new BadRequestsException(
+      'Incorrect password!',
+      ErrorCode.INCORRECT_PASSWORD
+    )
   }
 
   const token = jwt.sign(
@@ -70,4 +61,10 @@ export const login = async (request: Request, response: Response) => {
     JWT_SECRET
   )
   response.json({ user, token })
+}
+
+// Me
+export const me = async (request: Request, response: Response) => {
+  response.json(request.user)
+  // response.json('Hello World')
 }

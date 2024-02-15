@@ -7,11 +7,9 @@ export const errorMiddleware = (
   response: Response,
   next: NextFunction
 ) => {
-  response
-    .status(error.statusCode)
-    .json({
-      message: error.message,
-      errorCode: error.errorCode,
-      errors: error.errors,
-    })
+  response.status(error.statusCode).json({
+    message: error.message,
+    errorCode: error.errorCode,
+    errors: error.errors,
+  })
 }

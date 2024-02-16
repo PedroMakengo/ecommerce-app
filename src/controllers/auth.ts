@@ -66,5 +66,4 @@ export const login = async (request: Request, response: Response) => {
 // Me
 export const me = async (request: Request, response: Response) => {
   response.json(request.user)
-  // response.json('Hello World')
 }

@@ -10,7 +10,8 @@ import {
 
 export const ordersRoutes = Router()
 
-ordersRoutes.post('/', [authMiddleware], errorHandler(createOrder))
+createOrder
+ordersRoutes.post('/', [authMiddleware], createOrder)
 ordersRoutes.get('/', [authMiddleware], errorHandler(listOrders))
-ordersRoutes.delete('/:id', [authMiddleware], errorHandler(cancelOrder))
-ordersRoutes.put('/:id', [authMiddleware], errorHandler(getOrderById))
+ordersRoutes.put('/:id/cancel', [authMiddleware], errorHandler(cancelOrder))
+ordersRoutes.get('/:id', [authMiddleware], errorHandler(getOrderById))

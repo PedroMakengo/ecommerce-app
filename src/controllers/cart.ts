@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import { prismaClient } from '../index'
-import { CreateCartSchema } from '../schema/cart'
-import { BadRequestsException } from '../exceptions/bad-requests'
+import { ChangeQuantitySchema, CreateCartSchema } from '../schema/cart'
 import { ErrorCode } from '../exceptions/root'
 import { NotFoundException } from '../exceptions/not-found'
 import { Product } from '@prisma/client'
@@ -45,14 +44,26 @@ export const deleteItemFromCart = async (
   response.json({ success: true })
 }
 
-export const changeQuantity = async (request: Request, response: Response) => {}
+export const changeQuantity = async (request: Request, response: Response) => {
+  const validateData = ChangeQuantitySchema.parse(request.body)
 
-export const getCart = async (request: Request, response: Response) => {
-  const count = await prismaClient.cartItem.count()
-  const cart = await prismaClient.cartItem.findMany({
-    skip: Number(request.query.skip) || 0,
-    take: 5,
+  const updateCart = await prismaClient.cartItem.update({
+    where: { id: Number(request.params.id) },
+    data: {
+      quantity: validateData.quantity,
+    },
   })
 
-  response.json({ cart, count })
+  response.json(updateCart)
+}
+
+export const getCart = async (request: Request, response: Response) => {
+  const cart = await prismaClient.cartItem.findMany({
+    where: { userId: request.user?.id },
+    include: {
+      product: true,
+    },
+  })
+
+  response.json(cart)
 }

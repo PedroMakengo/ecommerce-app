@@ -15,9 +15,8 @@ const productsRoutes: Router = Router()
 
 productsRoutes.post(
   '/',
-  // [authMiddleware, adminMiddleware],
-  createProduct
-  // errorHandler(createProduct)
+  [authMiddleware, adminMiddleware],
+  errorHandler(createProduct)
 )
 productsRoutes.put(
   '/:id',

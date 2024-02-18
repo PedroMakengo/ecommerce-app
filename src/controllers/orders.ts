@@ -103,3 +103,70 @@ export const getOrderById = async (request: Request, response: Response) => {
     throw new NotFoundException('Order not found', ErrorCode.ORDER_NOT_FOUND)
   }
 }
+
+export const listAllOrders = async (request: Request, response: Response) => {
+  let whereClause = {}
+
+  const status = request.params.status
+
+  if (status) {
+    whereClause = { status }
+  }
+
+  const orders = await prismaClient.order.findMany({
+    where: whereClause,
+    skip: Number(request.query.skip) || 0,
+    take: 5,
+  })
+
+  response.json(orders)
+}
+
+export const changeStatus = async (request: Request, response: Response) => {
+  try {
+    const order = await prismaClient.order.update({
+      where: {
+        id: Number(request.params.id),
+      },
+      data: {
+        status: request.body.status,
+      } as any,
+    })
+
+    await prismaClient.orderEvent.create({
+      data: {
+        orderId: order.id,
+        status: request.body.status,
+      },
+    })
+
+    response.json(order)
+  } catch (error) {
+    throw new NotFoundException('Not Found Order', ErrorCode.ORDER_NOT_FOUND)
+  }
+}
+
+export const listUserOrders = async (request: Request, response: Response) => {
+  try {
+    const order = await prismaClient.order.findFirstOrThrow({
+      where: {
+        userId: Number(request.params.id),
+        status: request.body.status,
+      },
+      include: {
+        user: true,
+      },
+    })
+
+    await prismaClient.orderEvent.create({
+      data: {
+        orderId: order.id,
+        status: request.body.status,
+      },
+    })
+
+    response.json(order)
+  } catch (error) {
+    throw new NotFoundException('Not exist user', ErrorCode.ORDER_NOT_FOUND)
+  }
+}

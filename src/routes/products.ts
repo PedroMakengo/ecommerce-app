@@ -6,6 +6,7 @@ import {
   listProducts,
   deleteProduct,
   updateProduct,
+  searchProducts,
 } from '../controllers/products'
 import { errorHandler } from '../error-handler'
 import authMiddleware from '../middlewares/auth'
@@ -18,21 +19,27 @@ productsRoutes.post(
   [authMiddleware, adminMiddleware],
   errorHandler(createProduct)
 )
+
 productsRoutes.put(
   '/:id',
   [authMiddleware, adminMiddleware],
   errorHandler(updateProduct)
 )
+
 productsRoutes.delete(
   '/:id',
   [authMiddleware, adminMiddleware],
   errorHandler(deleteProduct)
 )
+
 productsRoutes.get(
   '/',
   [authMiddleware, adminMiddleware],
   errorHandler(listProducts)
 )
+
+productsRoutes.get('/search', [authMiddleware], errorHandler(searchProducts))
+
 productsRoutes.get(
   '/:id',
   [authMiddleware, adminMiddleware],

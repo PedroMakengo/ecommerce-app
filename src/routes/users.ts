@@ -10,16 +10,29 @@ import {
   listUsers,
   updateUser,
 } from '../controllers/users'
+import adminMiddleware from '../middlewares/admin'
 
 const usersRoutes: Router = Router()
 
-usersRoutes.post('/', [authMiddleware], errorHandler(addAddress))
-usersRoutes.get('/', [authMiddleware], errorHandler(listAddress))
-usersRoutes.delete('/:id', [authMiddleware], errorHandler(deleteAddress))
+usersRoutes.post('/address', [authMiddleware], errorHandler(addAddress))
+usersRoutes.get('/address', [authMiddleware], errorHandler(listAddress))
+usersRoutes.delete(
+  '/address/:id',
+  [authMiddleware],
+  errorHandler(deleteAddress)
+)
 usersRoutes.put('/', [authMiddleware], errorHandler(updateUser))
 
-usersRoutes.get('/users', [authMiddleware], errorHandler(listUsers))
-usersRoutes.get('/users/:id', [authMiddleware], errorHandler(getUserById))
-usersRoutes.put('/users/:id', [authMiddleware], errorHandler(changeUserRole))
+usersRoutes.put(
+  '/:id/role',
+  [authMiddleware, adminMiddleware],
+  errorHandler(changeUserRole)
+)
+usersRoutes.get('/', [authMiddleware, adminMiddleware], errorHandler(listUsers))
+usersRoutes.get(
+  '/:id',
+  [authMiddleware, adminMiddleware],
+  errorHandler(getUserById)
+)
 
 export default usersRoutes
